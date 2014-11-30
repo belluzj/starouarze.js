@@ -1,1 +1,32 @@
 /* CSS declarations go here */
+
+.gui{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+
+.menu{
+	margin: auto;
+	height: 300px;
+	width: 500px;
+	background-color: #222222;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	position: absolute;
+}
+
+.btns-zone{
+	
+}
+
+.menu .btns-zone .menu-btn{
+	margin: auto;
+	width: 120px;
+	height: 35px;
+	display: block;
+}
