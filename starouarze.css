@@ -19,6 +19,7 @@ html, body {
 	height: 100%;
 	top: 0;
 	left: 0;
+	color:  #F8E2A8;
 }
 
 .menu{
@@ -32,12 +33,14 @@ html, body {
 	left: 0;
 	position: absolute;
 	opacity: 0.6;
+
 }
 
 .btns-zone{
 	top:50%;
 	margin-top: -35px;
 	position: relative;
+
 }
 
 .menu .btns-zone .menu-btn{
@@ -45,4 +48,15 @@ html, body {
 	width: 120px;
 	height: 35px;
 	display: block;
+}
+
+.input-field{
+	
+}
+
+.create-zone{
+	top:50%;
+	margin-top: -34px;
+	position: relative;
+	text-align: center;
 }
