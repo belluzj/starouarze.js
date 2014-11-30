@@ -13,4 +13,5 @@ accounts-password
 accounts-ui
 accounts-google
 accounts-twitter
+iron:router
 
