@@ -1,96 +1,32 @@
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-		<title>Starouarze</title>
+<head>
+  <title>Starouarze</title>
+</head>
 
-		<style>
-			html, body {
-				overflow: hidden;
-				width: 100%;
-				height: 100%;
-				margin: 0;
-				padding: 0;
-			}
-
-			#renderCanvas {
-				width: 100%;
-				height: 100%;
-				touch-action: none;
-			}
-		</style>
-		<link rel="stylesheet" href="starouarze.css">
-
-		<script src="babylon/hand.minified-1.2.js"></script>
-		<script src="babylon/cannon.js"></script>
-		<script src="babylon/oimo.js"></script>
-		<script src="babylon/babylon.js"></script>
-	</head>
-
-	<body>
+<template name="ApplicationLayout">
 		<canvas id="renderCanvas"></canvas>
-
-		<script type="text/javascript">
-			// Get the canvas element from our HTML below
-			var canvas = document.getElementById("renderCanvas");
-
-			// Load the BABYLON 3D engine
-			var engine = new BABYLON.Engine(canvas, true);
-
-			// -------------------------------------------------------------
-			// Here begins a function that we will 'call' just after it's built
-			var createScene = function() {
-
-				// Now create a basic Babylon Scene object
-				var scene = new BABYLON.Scene(engine);
-
-				// Change the scene background color to black.
-				scene.clearColor = new BABYLON.Color3(0, 0, 0);
-
-				// This creates and positions a free camera
-				var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-
-				// This targets the camera to scene origin
-				camera.setTarget(BABYLON.Vector3.Zero());
-
-				// This creates a light, aiming 0,1,0 - to the sky.
-				var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-
-				// Dim the light a small amount
-				light.intensity = .5;
-
-				// Leave this function
-				return scene;
-
-			};
-			// End of createScene function
-			// -------------------------------------------------------------
-
-			// Now, call the createScene function that you just finished creating
-			var scene = createScene();
-
-			// Register a render loop to repeatedly render the scene
-			engine.runRenderLoop(function() {
-				scene.render();
-			});
-
-			// Watch for browser/canvas resize events
-			window.addEventListener("resize", function() {
-				engine.resize();
-			});
-
-		</script>
 
 		<div class="gui">
 			<div class="menu">
 				<div class="btns-zone">
-          {{yield}}
+          {{> yield}}
 				</div>
 			</div>
 		</div>
+</template>
 
-	</body>
+<template name="Home">
+<button class="menu-btn btn-create">
+  Create
+</button>
+<button class="menu-btn btn-join">
+  Join
+</button>
+</template>
 
-<template name="gui">
-  Welcome {{{username}}}
-  <button class="menu-btn create">Create</button>
-  <button class="menu-btn join">Join</button>
+<template name="CreateRound">
+Create
+</template>
+
+<template name="JoinRound">
+Join
 </template>
