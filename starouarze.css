@@ -18,10 +18,13 @@
 	right: 0;
 	left: 0;
 	position: absolute;
+	opacity: 0.6;
 }
 
 .btns-zone{
-	
+	top:50%;
+	margin-top: -35px;
+	position: relative;
 }
 
 .menu .btns-zone .menu-btn{
