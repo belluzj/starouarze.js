@@ -7,4 +7,10 @@ meteor-platform
 autopublish
 insecure
 warrenmcquinn:meteor-babylon
+ovcharik:howler
+coffeescript
+accounts-password
+accounts-ui
+accounts-google
+accounts-twitter
 

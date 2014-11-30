@@ -5,7 +5,11 @@
 <body>
   <h1>Welcome to Meteor!</h1>
 
-  {{> hello}}
+  {{#if currentUser}}
+    You are logged in!
+  {{else}}
+    {{> loginButtons}}
+  {{/if}}
 </body>
 
 <template name="hello">
