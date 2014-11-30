@@ -60,3 +60,26 @@ html, body {
 	position: relative;
 	text-align: center;
 }
+
+.room-zone{
+	position: relative;
+	text-align: center;
+}
+
+.gui table{
+	width: 100%;
+	text-align: center;
+	color:  #F8E2A8;
+}
+
+.gui table .btn-join {
+	width: 100%;
+}
+
+.gui table .not-joined {
+	color: #884444;
+}
+
+.gui table .joined {
+	color: #448844;
+}
