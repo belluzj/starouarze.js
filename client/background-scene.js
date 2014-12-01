@@ -1,4 +1,4 @@
-Meteor.startup(function() {
+Template.babylonCanvas.rendered = function() {
   // Get the canvas element from our HTML below
   var canvas = document.getElementById("renderCanvas");
 
@@ -74,6 +74,7 @@ Meteor.startup(function() {
   // End of createScene function
   // -------------------------------------------------------------
 
+
   // Now, call the createScene function that you just finished creating
   var scene = createScene();
 
@@ -86,4 +87,4 @@ Meteor.startup(function() {
   window.addEventListener("resize", function() {
     engine.resize();
   });
-});
+};

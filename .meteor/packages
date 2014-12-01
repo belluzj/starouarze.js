@@ -4,9 +4,6 @@
 # but you can also edit it by hand.
 
 meteor-platform
-autopublish
-insecure
-warrenmcquinn:meteor-babylon
 ovcharik:howler
 coffeescript
 accounts-password
@@ -14,4 +11,5 @@ accounts-ui
 accounts-google
 accounts-twitter
 iron:router
+warrenmcquinn:meteor-babylon
 

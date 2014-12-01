@@ -15,5 +15,8 @@ Router.route '/', ->
 Router.route '/create', ->
   @render 'CreateRound'
 
-Router.route '/join', ->
-  @render 'JoinRound'
+Router.route '/join',
+  action: ->
+    @render 'JoinRound'
+  subscriptions: ->
+    @subscribe 'rounds'

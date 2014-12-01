@@ -18,8 +18,8 @@ Template.CreateRound.events
     Router.go '/join'
 
 Template.JoinRound.helpers
-  'rounds': ->
-    Rounds.find()
+  'openRounds': ->
+    Rounds.find {missingUsers: {$gt: 0}}
   'userId': ->
     Meteor.userId()
 
