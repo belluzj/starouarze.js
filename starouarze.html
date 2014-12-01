@@ -6,27 +6,59 @@
 		<canvas id="renderCanvas"></canvas>
 
 		<div class="gui">
+      {{#if currentUser}}
+      {{> loginButtons}}
+      {{/if}}
 			<div class="menu">
-				<div class="btns-zone">
           {{> yield}}
-				</div>
 			</div>
 		</div>
 </template>
 
+<template name="Login">
+{{> loginButtons}}
+</template>
+
 <template name="Home">
+				<div class="btns-zone">
 <button class="menu-btn btn-create">
   Create
 </button>
 <button class="menu-btn btn-join">
   Join
 </button>
+</div>
 </template>
 
 <template name="CreateRound">
-Create
+<div class="create-zone">
+<span>
+  Game name :
+</span>
+<input name="round-name" class="input-field" value="{{proposedName}}"/><br>
+<span>
+  Number of players :
+</span>
+<input name="nb-players" class="input-field"/><br>
+<button class="menu-btn btn-start">Start</button>
+</div>
 </template>
 
 <template name="JoinRound">
-Join
+<div class="room-zone">
+  <table BORDER="1">
+    <TR>
+      <TH>Game</TH>
+      <TH>Players</TH>
+      <TH>Join</TH>
+    </TR>
+    {{#each rounds}}
+    <TR>
+      <TD>{{name}}</TD>
+      <TD>{{length users}} / {{nb_users}}</TD>
+      <TD><button class="join-btn {{#if contains users userId}}joined{{else}}not-joined{{/if}}">Join</button></TD>
+    </TR>
+    {{/each}}
+  </table>
+</div>
 </template>
