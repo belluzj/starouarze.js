@@ -1,5 +1,3 @@
-
-
 Router.configure
   layoutTemplate: 'ApplicationLayout'
 
@@ -13,10 +11,21 @@ Router.route '/', ->
   @render 'Home'
 
 Router.route '/create', ->
+  Meteor.call 'leaveRound'
   @render 'CreateRound'
 
 Router.route '/join',
   action: ->
     @render 'JoinRound'
   subscriptions: ->
-    @subscribe 'rounds'
+    @subscribe 'openRounds'
+
+Router.route '/play',
+  action: ->
+    @render 'GameUI'
+  subscriptions: ->
+    [
+      @subscribe 'scenegraph'
+      @subscribe 'currentRound'
+    ]
+
