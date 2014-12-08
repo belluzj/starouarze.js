@@ -1,0 +1,36 @@
+.gui .loadingbar .currentprogress{
+    background-color: rgba(13, 13, 45, 0.9);
+    height: 100%;
+}
+
+.gui .loadingbar{
+    background-color: rgba(192, 189, 189, 0.85);
+    height: 40px;
+    width: 600px;
+    left: 50%;
+    margin-left: -300px;
+    position: absolute;
+    top: 50%;
+    margin-top: -20px;
+    
+}
+
+.gui .loadingbar > .loadingTxt {
+    color: black;
+}
+
+.gui .loadingbar .currentprogress .loadingTxt {
+    color: rgb(143, 234, 237);
+}
+
+.gui .loadingbar .currentprogress {
+    overflow: hidden;
+    margin-top: -40px;
+}
+
+.gui .loadingbar .loadingTxt {
+    width: 600px;
+    height: 100%;
+    text-align: center;
+    text-shadow: 0px 0px 10px;
+}

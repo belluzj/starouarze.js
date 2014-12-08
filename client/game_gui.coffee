@@ -1,5 +1,5 @@
 
-Template.GameLayout.rendered = ->
+Template.GameUI.rendered = ->
   $(window).on 'keydown', (event) ->
     console.log(event)
     switch event.which
@@ -16,6 +16,13 @@ Template.GameLayout.rendered = ->
     scenegraph.get().update BB.cube
 
 
-
+Template.GameUI.helpers
+  lifePercent: ->
+    Meteor.user().life or 0
   
-  
+Template.GameLoading.helpers
+  loadingGlobal: ->
+    round = Rounds.findOne Meteor.user().round_id
+    round.loading or 0
+  loadindTxt: ->
+    "loading please wait until it is loaded"

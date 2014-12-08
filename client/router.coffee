@@ -27,4 +27,10 @@ Router.route '/play',
     @render 'GameUI'
   subscriptions: ->
     @subscribe 'currentRound'
-
+    
+Router.route '/loading',
+  layoutTemplate: 'GameLayout'
+  action: ->
+    @render 'GameLoading'
+  subscriptions: ->
+    @subscribe 'currentRound'
