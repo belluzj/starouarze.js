@@ -24,7 +24,6 @@ Template.JoinRound.helpers
   'openRounds': ->
     Rounds.find {missing_users: {$gt: 0}}
   'canLeave': ->
-    console.log(Meteor.user())
     @_id == Meteor.user().round_id
   'canJoin': ->
     not Meteor.user().round_id
@@ -35,6 +34,11 @@ Template.JoinRound.events
   'click .round-leave': (event, template) ->
     Meteor.call 'leaveRound'
 
+Tracker.autorun ->
+  if Meteor.user()
+    round = Rounds.findOne Meteor.user().round_id
+    if round?.missing_users == 0
+      Router.go '/play'
 
 
 

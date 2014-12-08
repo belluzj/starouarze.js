@@ -12,4 +12,8 @@ accounts-google
 accounts-twitter
 iron:router
 warrenmcquinn:meteor-babylon
+belluzj:meteor-scenegraph
+reactive-var
+fds:keycodes
+meteorhacks:zones
 

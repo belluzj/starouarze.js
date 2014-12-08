@@ -1,5 +1,5 @@
 Router.configure
-  layoutTemplate: 'ApplicationLayout'
+  layoutTemplate: 'MenuLayout'
 
 Router.onBeforeAction ->
   if not Meteor.user()
@@ -21,11 +21,10 @@ Router.route '/join',
     @subscribe 'openRounds'
 
 Router.route '/play',
+  layoutTemplate: 'GameLayout'
   action: ->
+    Session.set('inGame', true)
     @render 'GameUI'
   subscriptions: ->
-    [
-      @subscribe 'scenegraph'
-      @subscribe 'currentRound'
-    ]
+    @subscribe 'currentRound'
 

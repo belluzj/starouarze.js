@@ -1,15 +1,18 @@
 
 Meteor.publish 'userData', ->
   if @userId
-    console.log('publish user data')
     return Meteor.users.find @userId,
       fields: # List of fields available to the client
         round_id: 1
   @ready()
 
 Meteor.publish 'openRounds', ->
-  console.log('publish open rounds')
-  Rounds.find {missing_users: {$gt: 0}}
+  if @userId
+    return Rounds.find $or: [
+      {missing_users: {$gt: 0}},
+      {user_ids: @userId}
+    ]
+  @ready()
 
 Meteor.publish 'currentRound', ->
   if @userId
@@ -18,12 +21,12 @@ Meteor.publish 'currentRound', ->
       return Rounds.find user.round_id
   @ready()
 
-Meteor.publish 'scenegraph', ->
+SG.publish (scene_id) ->
   if @userId
-    user = Meteor.users.find @userId
-    if user.round_id
-      return Scenegraph.find {round_id: user.round_id}
-  @ready()
+    user = Meteor.users.findOne @userId
+    user.round_id == scene_id
+  else
+    false
 
 
 

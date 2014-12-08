@@ -1,0 +1,74 @@
+<template name="MenuLayout">
+  {{> babylonCanvas}}
+
+	<div class="gui">
+    {{#if currentUser}}
+      {{> loginButtons}}
+    {{/if}}
+    {{> yield}}
+	</div>
+</template>
+
+<template name="Login">
+<div class="menu">
+  {{> loginButtons}}
+</div>
+</template>
+
+<template name="Home">
+<div class="menu">
+  <div class="btns-zone">
+    <button class="menu-btn btn-create">
+      Create
+    </button>
+    <button class="menu-btn btn-join">
+      Join
+    </button>
+  </div>
+</div>
+</template>
+
+<template name="CreateRound">
+<div class="menu">
+  <div class="create-zone">
+    <span>
+      Game name :
+    </span>
+    <input name="round-name" class="input-field" value="{{proposedName}}"/><br>
+    <span>
+      Number of players :
+    </span>
+    <input name="nb-players" class="input-field"/><br>
+    <button class="menu-btn btn-start">Start</button>
+  </div>
+</div>
+</template>
+
+<template name="JoinRound">
+<div class="menu">
+  <div class="room-zone">
+    <table BORDER="1">
+      <TR>
+        <TH>Game</TH>
+        <TH>Players</TH>
+        <TH>Join</TH>
+      </TR>
+      {{#each openRounds}}
+      <TR>
+        <TD>{{name}}</TD>
+        <TD>{{length user_ids}} / {{nb_users}}</TD>
+        <TD>
+          {{#if canLeave}}
+          <button class="btn-round round-leave">Leave</button>
+          {{else}}
+          {{#if canJoin}}
+          <button class="btn-round round-join">Join</button>
+          {{/if}}
+          {{/if}}
+        </TD>
+      </TR>
+      {{/each}}
+    </table>
+  </div>
+</div>
+</template>
