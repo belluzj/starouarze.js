@@ -14,36 +14,39 @@ How-to
 A scene graph is only defined by its id. You should provide it.
 
 In order to synchronize the scene between everyone, `SG.publish` and
-`SG.subscribe` implement the same concept as `Meteor.publish` and
-`Meteor.subscribe`, except that the only thing the publish callback does is
-check whether it's okay to publish the scene.
+`SG.Scene::subscribe` implement the same concept as `Meteor.publish` and
+`Meteor.subscribe`.
 
 ```javascript
 // On the server
-SG.publish('my_scenegraph', function(scene_id) {
+SG.publish(function(scene_id) {
+  // Check if the current user can access the given scene
+  // You can only publish a whole scene, not part of it
   if (this.userId && ... ) {
     return true;
   }
   return false;
 });
 
-// On the client
-SG.subscribe('my_scenegraph', Meteor.user().my_scene_id);
+// Anywhere
+var scene = new SG.Scene(Meteor.user().my_scene_id);
+scene.subscribe();
 ```
 
 ### Create and share objects
 
-By defaults all managed objects carry these minimal data:
-* `type`: type of this object
-* `scene_id`: the scene of this object
-* `parent`: if defined, another managed object that is the parent
+An object that is managed by the scene graph must have at least the following
+fields:
+* `type` (string): the type of this object
 
-The type information is very important, because that's how you will be able to "inflate" the received nodes into real JS objects, and how the synchronization mechanism knows which fields to synchronize. You must therefore specify for each type a list of meaningful fields that should be taken care of:
+The type information is very important, because that's how you will be able to
+"inflate" the received nodes into real JS objects, and how the synchronization
+mechanism knows which fields to synchronize. You must therefore specify for
+each type a list of meaningful fields that should be taken care of:
 
 ```javascript
 // On both sides
 
-// Data types
 SG.type('Mat22', [], {
   a: SG.Types.Number,
   b: SG.Types.Number,
@@ -51,23 +54,23 @@ SG.type('Mat22', [], {
   d: SG.Types.Number,
 });
 
-// Node types
-SG.type('Base', ['Node'], {
-  position: SG.Types.Vec3,
-  rotation: SG.Types.Optional(SG.Types.Quat),
+SG.type('Mesh', {
+  position: SG.Types.Vector3,
+  rotation: SG.Types.Optional(SG.Types.Quaternion),
 });
 
-SG.type('Noisy', ['Node'], {
+SG.type('Noisy', {
   sound_file: SG.Types.String,
 });
 
-SG.type('Ship', ['Base', 'Noisy'], {
+SG.type('Ship', ['Noisy'], {
   class: SG.Types.Enum(['destroyer', 'fighter']),
+  mesh: 'Mesh',
 });
 
 SG.type('Laser', ['Noisy'], {
-  start_pos: SG.Types.Vec3,
-  direction: SG.Types.Quat,
+  start_pos: SG.Types.Vector3,
+  direction: SG.Types.Quaternion,
   speed: SG.Types.Number,
 });
 ```
@@ -75,38 +78,38 @@ SG.type('Laser', ['Noisy'], {
 As you can see, you get a basic type inheritance system and some predefined
 types. For a complete description of these, see the documentation. **TODO: doc**
 
-Then you can add objects to a scene by calling the `SG.add` method. The base
+Then you can add objects to a scene by calling the `SG.Scene::add` method. The base
 principle is that you must give some Javascript object of your choosing (for
 example a BABYLON mesh) which has all the fields you specified in your type
 definitions, plus the field `type`.
 
 ```javascript
-// The class MyShip defines a property `type = 'ship'`
+// The class MyShip defines a property `type = 'Ship'`
 var my_ship = new MyShip({
-  position: {x: 1, y: 2, z: 3},
-  rotation: {x: 0, y: 0, z: 0, w: 1},
+  mesh: {
+    position: {x: 1, y: 2, z: 3},
+    rotation: {x: 0, y: 0, z: 0, w: 1},
+  },
   sound_file: 'vroom.ogg',
   class: 'fighter',
 });
 
-SG.add(scene_id, my_ship);
+scene.add(my_ship);
 ```
 
-The `SG.add()` method will add your object to the scene and immediately start to
+The `SG.Scene::add()` method will add your object to the scene and immediately start to
 synchronize it with other players of the same scene.
 
 ### Receive new objects
 
-Use `SG.added()` in order to receive new objects for a specific scene. On the
-client, you must subscribe to the scene beforehand.
-
-The semantics are: create a new empty object of the right type and return it.
-The object will then be updated with the actual data that was added to the
-scene.
+Use `SG.Scene::added()` in order to receive new objects for a specific scene.
+You must subscribe to the scene beforehand. The given callback must create a
+new empty object of the right type and return it.  The object will then be
+updated with the actual data that was added to the scene.
 
 ```javascript
 // Anywhere
-SG.added(scene_id, function (type) {
+scene.added(function (type) {
   // Create a new object of the given type and return it
   if (type == 'ship') {
     return new MyShip();
@@ -114,10 +117,12 @@ SG.added(scene_id, function (type) {
 });
 ```
 
+TODO object factory
+
 ### Use the synchronized objects
 
-You can get a synchronized scene object in two ways:
-1. You created it yourself and gave it to `SG.add()`
+You can get a synchronized object in two ways:
+1. You created it yourself and gave it to `SG.Scene::add()`
 2. You received the object through `SG.added()`
 
 In both cases, your object is now part of the scene graph and will directly

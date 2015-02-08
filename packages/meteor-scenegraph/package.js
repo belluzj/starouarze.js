@@ -5,26 +5,33 @@ Package.describe({
   git: ' /* Fill me in! */ '
 });
 
-Package.onUse(function(api) {
+Package.onUse(function (api) {
   api.versionsFrom('1.0');
   api.use('coffeescript');
   api.use('underscore');
   api.use('check');
   api.use('mongo');
   api.addFiles([
-    'lib/export.coffee', // Must be the first file, defines SG
+    'lib/exports.coffee', // Must be the first file, defines SG
+    'lib/testexports.coffee', // Include this file when testing
     'lib/types.coffee',
     'lib/node.coffee',
     'lib/store.coffee',
     'lib/scenegraph.coffee',
   ]);
   api.addFiles('server/scenegraph.coffee', 'server');
-  api.addFiles('client/scenegraph.coffee', 'client');
   api.export('SG');
 });
 
-Package.onTest(function(api) {
+Package.onTest(function (api) {
+  api.use('check');
   api.use('tinytest');
+  api.use('underscore');
+  api.use('coffeescript');
+  api.use('test-helpers');
   api.use('belluzj:meteor-scenegraph');
-  api.addFiles('tests/tests.coffee');
+  api.addFiles([
+    'tests/tests.coffee',
+    'tests/types.coffee',
+  ]);
 });

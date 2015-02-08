@@ -2,6 +2,7 @@ Node = @Node
 
 # The object store
 @Store = Store = {}
+Internals.Store = Store
 
 # Public methods
 # --------------

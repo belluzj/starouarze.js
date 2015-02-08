@@ -1,4 +1,5 @@
 @Node = Node = {}
+@Internals.Node = Node
 
 # Public methods
 # --------------

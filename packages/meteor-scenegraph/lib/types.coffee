@@ -1,15 +1,43 @@
 SG = @SG
 
 @Type = Type = {}
+Internals.Type = Type
 
 Type.register = (name, inheritance, type) ->
-  type = Type.resolve type
-  inheritance = _.map inheritance, Type.resolve
+  try
+    check name, String
+    check inheritance, [Match.OneOf String, Object]
+    check type, Match.OneOf String, Object
+  catch error
+    throw new SG.Error "Type.register: invalid arguments", error
+  if name == ''
+    throw new SG.Error "Type.register: new type has an empty name"
+  # Resolve field types
+  try
+    type = Type.resolve type
+  catch error
+    throw new SG.Error "Type.register: unknown field type #{ type }", error
+  # Resolve parent types
+  inheritance = _.map inheritance, (type) ->
+    try
+      Type.resolve type
+    catch error
+      throw new SG.Error "Type.register: unknown parent type #{ type }", error
   # Mix in inherited fields
   complete_type = _.defaults.apply(_, [type].concat inheritance)
+  empty = true
+  for own field of complete_type
+    if field != '__type_check'
+      empty = false
+  if empty
+    throw new SG.Error "Type.register: new type `#{ name }` has an empty definition"
   Type.Types[name] = complete_type
 
 Type.resolve = (type) ->
+  try
+    check type, Match.OneOf String, Object
+  catch error
+    throw new SG.Error "Type.resolve: invalid arguments", error
   if type?.__type_check
     type
   else if _.isString(type) and Type.Types[type]
@@ -21,26 +49,28 @@ Type.resolve = (type) ->
     ret.__type_check = Object
     ret
   else
-    throw new SG.Error "Type `#{ type }' not found"
+    throw new SG.Error "Type.resolve: unknown type `#{ type }'"
 
 Type.check_type_rec = (path, type, object) ->
   for own name, field_type of type when name != '__type_check'
     subpath = path + '.' + name
     if _.isObject object[name]
       unless field_type.__type_check == Object
-        throw new SG.Error "Field #{ subpath } of unexpected object type"
+        throw new SG.Error "Type.check_type_rec: field #{ subpath } of unexpected object type"
       Type.check_type_rec subpath, field_type, object[name]
     else
       unless Match.test object[name], field_type.__type_check
-        throw new SG.Error "Field #{ subpath } does not match its type"
+        throw new SG.Error "Type.check_type_rec: field #{ subpath } does not match its type"
 
 Type.get_type = (object) ->
-  unless _.isObject(object) and _.isString(object.type)
-    throw new SG.Error "Object #{ object } does not
+  unless _.isObject(object)
+    throw new SG.Error "Type.get_type: not an object"
+  unless _.isString(object.type)
+    throw new SG.Error "Type.get_type: object does not
       carry type information ('type' property should
       be the name of a registered type)"
   unless type = Type.Types[object.type]
-    throw new SG.Error "Object #{ object } is of
+    throw new SG.Error "Type.get_type: object is of
       unknown type '#{ object.type }'"
   type
 
@@ -50,9 +80,12 @@ Type.check_type = (object) ->
 Type.some_fields_rec = (type, object, fields) ->
   subset = {}
   for own name, field_type of type when name != '__type_check'
-    if !fields or fields[name]
+    unless (fields == true) or (_.isObject(fields) and (!fields.hasOwnProperty(name) or _.isObject(fields[name]) or fields[name] == true))
+      throw new SG.Error "Type.some_fieds_rec: wrong specifier of updated fields"
+    subfields = (fields == true) or fields[name]
+    if subfields == true or _.isObject(subfields)
       if _.isObject(object[name]) and field_type.__type_check == Object
-        subset[name] = Type.some_fields_rec field_type, object[name], fields?[name]
+        subset[name] = Type.some_fields_rec field_type, object[name], subfields
       else
         subset[name] = object[name]
   subset
@@ -63,7 +96,7 @@ Type.some_fields = (object, fields) ->
   ret
 
 Type.all_fields = (object) ->
-  Type.some_fields object, null
+  Type.some_fields object, true
 
 Type.update_rec = (type, object, fields) ->
   for own name, field_type of type when name != '__type_check'

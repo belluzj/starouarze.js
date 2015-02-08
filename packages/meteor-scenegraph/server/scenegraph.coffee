@@ -1,6 +1,6 @@
-# Publish a scene graph
+# Allow publication of a scene graph
 SG.publish = (callback) ->
   Store.publish callback
 
-# Allow modifications
+# Allow modifications to a scene graph
 SG.allow = Store.allow

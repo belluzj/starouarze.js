@@ -36,6 +36,9 @@ class SG.Scene
   # Register the new-object callback
   added: (callback) ->
     Store.set_added_callback @scene_id, callback
-  
+
+  # Subscribe to updates
+  subscribe: ->
+    Store.subscribe @scene_id
 
 
