@@ -7,5 +7,21 @@
 </template>
 
 <template name="GameUI">
+    <div class="lifebar">
+        <div class="currentLife" style="width: {{lifePercent}}%;"></div>
+    </div>
 
+</template>
+
+<template name="GameLoading">
+    <div class="loadingbar">
+        <div class="loadingTxt">
+            {{loadindTxt}}
+        </div>
+        <div class="currentprogress" style="width: {{loadingGlobal}}%;">
+            <div class="loadingTxt">
+                {{loadindTxt}}
+            </div>
+        </div>
+    </div>
 </template>

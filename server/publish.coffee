@@ -4,6 +4,7 @@ Meteor.publish 'userData', ->
     return Meteor.users.find @userId,
       fields: # List of fields available to the client
         round_id: 1
+        life: 1
   @ready()
 
 Meteor.publish 'openRounds', ->
