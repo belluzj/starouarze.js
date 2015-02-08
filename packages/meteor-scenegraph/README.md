@@ -72,6 +72,11 @@ SG.type('Laser', ['Noisy'], {
   start_pos: SG.Types.Vector3,
   direction: SG.Types.Quaternion,
   speed: SG.Types.Number,
+}, function(object) {
+  if(object.team == 'gentil')
+    return new GentilLaser();
+  else
+    retunr new MechantLaser();
 });
 ```
 
@@ -107,17 +112,7 @@ You must subscribe to the scene beforehand. The given callback must create a
 new empty object of the right type and return it.  The object will then be
 updated with the actual data that was added to the scene.
 
-```javascript
-// Anywhere
-scene.added(function (type) {
-  // Create a new object of the given type and return it
-  if (type == 'ship') {
-    return new MyShip();
-  }
-});
-```
-
-TODO object factory
+TODO rewrite UP
 
 ### Use the synchronized objects
 
@@ -168,10 +163,6 @@ remotely, its function `sg_before_remove()` will be called locally.
 
 Ideas for improvement
 ---------------------
-
-1. Make it possible to define new types (to match a 3D engine != BABYLON)
-
-2. Allow nested fields in types?
 
 3. Maybe a function like `SG.dispatchUpdates()` to update individual objects at
    a specific moment?

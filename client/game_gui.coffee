@@ -16,6 +16,17 @@ Template.GameUI.rendered = ->
     scenegraph.get().update BB.cube
 
 
+Template.GameUI.created = ->
+  
+  $(window).bind("contextmenu", (e) ->  
+	  false;  
+  )
+  
+  $( "#gui" ).mousemove (event) ->
+    $( "#viseur_out" ).offset({top: event.pageY, left: event.pageX})
+    angle = 90 + 57.3 * Math.atan2(event.pageY - $( "#gui" ).height()/2, event.pageX - $( "#gui" ).width()/2)
+    $( "#viseur_out" ).css({transform: 'rotate(' + angle + 'deg)'})
+    
 Template.GameUI.helpers
   lifePercent: ->
     Meteor.user().life or 0

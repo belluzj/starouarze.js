@@ -1,7 +1,7 @@
 <template name="GameLayout">
   {{> babylonCanvas}}
 
-	<div class="gui">
+	<div class="gui" id="gui">
     {{> yield}}
 	</div>
 </template>
@@ -10,7 +10,10 @@
     <div class="lifebar">
         <div class="currentLife" style="width: {{lifePercent}}%;"></div>
     </div>
-
+    <div class="aimZone">
+        <img id="viseur_in" src="viseur.png"/>
+    </div>
+    <img id="viseur_out" src="viseur_out.png"/>
 </template>
 
 <template name="GameLoading">
