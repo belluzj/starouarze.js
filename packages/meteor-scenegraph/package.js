@@ -11,6 +11,7 @@ Package.onUse(function (api) {
   api.use('underscore');
   api.use('check');
   api.use('mongo');
+  api.use('ejson');
   api.addFiles([
     'lib/exports.coffee', // Must be the first file, defines SG
     'lib/testexports.coffee', // Include this file when testing

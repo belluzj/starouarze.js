@@ -3,6 +3,8 @@ SG = @SG
 @Type = Type = {}
 Internals.Type = Type
 
+# First part: type definition, verification
+
 Type.register = (name, inheritance, type) ->
   try
     check name, String
@@ -69,14 +71,24 @@ Type.get_type = (object) ->
     throw new SG.Error "Type.get_type: object does not
       carry type information ('type' property should
       be the name of a registered type)"
-  unless type = Type.Types[object.type]
+  unless Type.Types.hasOwnProperty(object.type)
     throw new SG.Error "Type.get_type: object is of
       unknown type '#{ object.type }'"
-  type
+  Type.Types[object.type]
 
 Type.check_type = (object) ->
   Type.check_type_rec object?.type, Type.get_type(object), object
 
+
+#
+# Second part: extraction (some/all_fields), reinsertion (update)
+#
+# When we extract `undefined` we transform into `Type.undefined_field`,
+# inversely when we update an object we transform `Type.undefined_field`
+# into a *missing property*, as opposed to a property set to `undefined`.
+#
+# Users should never see Type.undefined_field
+#
 Type.some_fields_rec = (type, object, fields) ->
   subset = {}
   for own name, field_type of type when name != '__type_check'
@@ -87,7 +99,11 @@ Type.some_fields_rec = (type, object, fields) ->
       if _.isObject(object[name]) and field_type.__type_check == Object
         subset[name] = Type.some_fields_rec field_type, object[name], subfields
       else
-        subset[name] = object[name]
+        subset[name] =
+          if object[name] == undefined
+            Type.undefined_field
+          else
+            object[name]
   subset
 
 Type.some_fields = (object, fields) ->
@@ -98,18 +114,56 @@ Type.some_fields = (object, fields) ->
 Type.all_fields = (object) ->
   Type.some_fields object, true
 
-Type.update_rec = (type, object, fields) ->
+Type.update_rec = (path, type, object, fields) ->
   for own name, field_type of type when name != '__type_check'
-    if fields[name]
-      if _.isObject(object[name]) and field_type.__type_check == Object
-        Type.update_rec field_type, object[name], fields[name]
+    subpath = path + '.' + name
+    if fields.hasOwnProperty(name)
+      unless Match.test(fields[name], field_type.__type_check) or
+          (fields[name] == Type.undefined_field and
+            Match.test(undefined, field_type.__type_check))
+        throw new SG.Error "Type.update_rec: field #{ subpath } does not match its type"
+      if field_type.__type_check == Object
+        Type.update_rec subpath, field_type, object[name], fields[name]
       else
-        # TODO maybe type checks here?
-        object[name] = fields[name]
+        if fields[name] != Type.undefined_field
+          object[name] = fields[name]
+        else
+          delete object[name]
 
 Type.update = (object, fields) ->
-  Type.update_rec Type.get_type(object), object, fields
+  Type.update_rec "", Type.get_type(object), object, fields
 
+Type.factory = (type, factory) ->
+  try
+    check type, Match.OneOf String, Object
+    check factory, Function
+  catch error
+    throw new SG.Error "Type.factory: invalid arguments", error
+  type = Type.resolve type
+  type.__factory = factory
+
+Type.create = (fields) ->
+  try
+    check fields, Object
+  catch error
+    throw new SG.Error "Type.create: invalid argument", error
+  type = Type.get_type(fields)
+  if type.hasOwnProperty('__factory')
+    fields_ = {type: fields.type}
+    Type.update(fields_, fields)
+    Type.check_type(fields_)
+    type.__factory(fields_)
+  else
+    {}
+
+# Make undefined fields JSON-able
+Type.undefined_field =
+  typeName: ->
+    "sg_undefined_field"
+  toJSONValue: ->
+    ""
+EJSON.addType Type.undefined_field.typeName(), ->
+  Type.undefined_field
 
 Type.Types = {}
 

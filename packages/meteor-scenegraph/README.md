@@ -9,13 +9,14 @@ a multiplayer game.
 How-to
 ------
 
-### Set up a scene graph
+### Share a scenegraph
 
 A scene graph is only defined by its id. You should provide it.
 
 In order to synchronize the scene between everyone, `SG.publish` and
 `SG.Scene::subscribe` implement the same concept as `Meteor.publish` and
-`Meteor.subscribe`.
+`Meteor.subscribe`. **These methods should be called only after you have
+defined all the types and object factories (see below).**
 
 ```javascript
 // On the server
@@ -33,14 +34,13 @@ var scene = new SG.Scene(Meteor.user().my_scene_id);
 scene.subscribe();
 ```
 
-### Create and share objects
+### Set up a scene graph
 
 An object that is managed by the scene graph must have at least the following
 fields:
 * `type` (string): the type of this object
 
-The type information is very important, because that's how you will be able to
-"inflate" the received nodes into real JS objects, and how the synchronization
+The type information is very important, because that's how the synchronization
 mechanism knows which fields to synchronize. You must therefore specify for
 each type a list of meaningful fields that should be taken care of:
 
@@ -57,7 +57,7 @@ SG.type('Mat22', [], {
 SG.type('Mesh', {
   position: SG.Types.Vector3,
   rotation: SG.Types.Optional(SG.Types.Quaternion),
-});
+})
 
 SG.type('Noisy', {
   sound_file: SG.Types.String,
@@ -72,21 +72,22 @@ SG.type('Laser', ['Noisy'], {
   start_pos: SG.Types.Vector3,
   direction: SG.Types.Quaternion,
   speed: SG.Types.Number,
-}, function(object) {
-  if(object.team == 'gentil')
-    return new GentilLaser();
-  else
-    retunr new MechantLaser();
 });
 ```
 
-As you can see, you get a basic type inheritance system and some predefined
-types. For a complete description of these, see the documentation. **TODO: doc**
+As you can see, you get a basic type inheritance system, composition, and some
+predefined types. For a complete description of these, see the documentation.
+**TODO: doc**
 
-Then you can add objects to a scene by calling the `SG.Scene::add` method. The base
-principle is that you must give some Javascript object of your choosing (for
-example a BABYLON mesh) which has all the fields you specified in your type
-definitions, plus the field `type`.
+### Create and share objects
+
+Then you can add objects to a scene by calling the `SG.Scene::add` method. The
+base principle is that you must give some Javascript object of your choosing
+(for example a BABYLON mesh) which has all the fields you specified in your
+type definitions, plus the field `type`.
+
+The `SG.Scene::add()` method will add your object to the scene and immediately
+start to synchronize it with other players of the same scene.
 
 ```javascript
 // The class MyShip defines a property `type = 'Ship'`
@@ -102,17 +103,46 @@ var my_ship = new MyShip({
 scene.add(my_ship);
 ```
 
-The `SG.Scene::add()` method will add your object to the scene and immediately start to
-synchronize it with other players of the same scene.
-
 ### Receive new objects
 
-Use `SG.Scene::added()` in order to receive new objects for a specific scene.
-You must subscribe to the scene beforehand. The given callback must create a
-new empty object of the right type and return it.  The object will then be
-updated with the actual data that was added to the scene.
+You will start receiving objects as soon as you call the `SG.Scene::subscribe`
+method. By default, the newly received objects will be instanciated as plain JS
+objects. If you want to use instancies of you own classes, you should define
+factories using `SG.factory()`. The factory of a given object type must return
+an object that will be tracked and updated by the scene graph.
 
-TODO rewrite UP
+```javascript
+if (Meteor.isClient) {
+  /*
+   * On the client, we need to create a new 3D object when a new ship
+   * joins the battlefield and when someone shoots a laser ray.
+   */
+
+  SG.factory('Ship', function(ship) {
+    if (ship.class == 'destroyer') {
+      return new DestroyerShip();
+    } else {
+      /*
+       * No need the check the contents of `ship.class',
+       * it's already been verified by the scenegraph when
+       * we received the object.
+       */
+      return new FighterShip();
+    }
+  });
+
+  SG.factory('Laser', function() {
+    /*
+     * The returned object will be updated with the fields that
+     * we just received, and its 'sg_before/after_update()' methods
+     * will be called. See section *Receive data updates*.
+     */
+    return new Laser();
+  });
+}
+```
+
+Note: when using inheritance or aggregation, only the top-level object will be created using the factory. All the base classes and members of the returned object are supposed to be fully constructed with your own types. Their factories won't be called. In the 
 
 ### Use the synchronized objects
 
@@ -169,5 +199,26 @@ Ideas for improvement
 
 4. Allow exchange of events between objects?
 
+5. Reactive fields with SG.Types.Reactive(...) decorator
 
+6. Every newly created object, either plain or produced by a factory, will be
+passed to a callback that you can specify for each type and/or for any type,
+using the `SG.added()' method.
 
+```javascript
+SG.added('Noisy', function(noisy) {
+  Audio.play(noisy.sound_file);
+});
+
+SG.added('Mesh', function(mesh) {
+  Canvas.add_mesh(mesh);
+});
+
+SG.added(function(object) {
+  Notifications.message("New " + object + " on the map!");
+});
+```
+
+Problem: callbacks called for inheritance, not composition?
+ex: Ship < Noisy → SG.added('Noisy') called
+ex: Ship { engine: Noisy } → SG.added('Noisy') called?

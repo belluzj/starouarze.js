@@ -144,6 +144,8 @@ Tinytest.add 'meteor-scenegraph - Type.some_fields_rec()', (test) ->
       y2:
         __type_check: Object
         z: Type.Types.Number
+      y3:
+        __type_check: Match.Optional Number
   instance =
     c: 'hop'
     x:
@@ -161,12 +163,14 @@ Tinytest.add 'meteor-scenegraph - Type.some_fields_rec()', (test) ->
         z: 1
       y2:
         z: 2
+      y3: Type.undefined_field
   test.equal Type.some_fields_rec(nested, instance, x: true),
     x:
       y1:
         z: 1
       y2:
         z: 2
+      y3: Type.undefined_field
   test.equal Type.some_fields_rec(nested, instance, x: y1: true),
     x:
       y1:
@@ -180,82 +184,225 @@ Tinytest.add 'meteor-scenegraph - Type.some_fields_rec()', (test) ->
   test.throws (-> Type.some_fields_rec(nested, instance, x: y2: "pouet")), "fields"
 
 Tinytest.add 'meteor-scenegraph - Type.some_fields()', (test) ->
+  # Throws for the same reasons as Type.get_type and Type.some_fields_rec
+  test.throws (-> Type.some_fields({}, true)), ""
 
+  Type.register 'Labeled', [], {label: Type.Types.String}
+  Type.register 'Rated', [], {rating: Type.Types.Number}
+  Type.register 'Song', ['Labeled', Type.Types.Rated], {}
+  Type.register 'Artist', [],
+    songs:
+      best: 'Song'
 
-###
+  artist =
+    type: 'Artist'
+    name: 'Roberto'
+    songs:
+      worst:
+        blop: 'pouet'
+      best:
+        label: 'Parlophone'
+        rating: 2
 
-Type.some_fields_rec = (type, object, fields) ->
-  subset = {}
-  for own name, field_type of type when name != '__type_check'
-    subfields = (fields == true) or fields[name]
-    if subfields
-      if _.isObject(object[name]) and field_type.__type_check == Object
-        subset[name] = Type.some_fields_rec field_type, object[name], subfields
-      else
-        subset[name] = object[name]
-  subset
+  test.equal Type.some_fields(artist, true),
+    type: 'Artist'
+    songs:
+      best:
+        label: 'Parlophone'
+        rating: 2
 
-Type.some_fields = (object, fields) ->
-  ret = Type.some_fields_rec Type.get_type(object), object, fields
-  ret.type = object.type
-  ret
+  test.equal Type.some_fields(artist, songs: best: label: true),
+    type: 'Artist'
+    songs:
+      best:
+        label: 'Parlophone'
 
-Type.all_fields = (object) ->
-  Type.some_fields object, true
+Tinytest.add 'meteor-scenegraph - Type.all_fields()', (test) ->
+  # Should just call Type.some_fields(..., true)
+  # FIXME Not tested
 
-Type.update_rec = (type, object, fields) ->
-  for own name, field_type of type when name != '__type_check'
-    if fields[name]
-      if _.isObject(object[name]) and field_type.__type_check == Object
-        Type.update_rec field_type, object[name], fields[name]
-      else
-        # TODO maybe type checks here?
-        object[name] = fields[name]
+Tinytest.add 'meteor-scenegraph - Type.update_rec()', (test) ->
+  nested =
+    __type_check: Object
+    x:
+      __type_check: Object
+      y1:
+        __type_check: Object
+        z: Type.Types.Number
+      y2:
+        __type_check: Object
+        z: Type.Types.Number
+      y3:
+        __type_check: Match.Optional Number
+  instance =
+    c: 'hop'
+    x:
+      t: 'plof'
+      y1:
+        r: 'plop'
+        z: 1
+      y2:
+        r: 'bof'
+        z: 2
+      y3: 99
 
-Type.update = (object, fields) ->
-  Type.update_rec Type.get_type(object), object, fields
+  # Correctly update an existing field
+  Type.update_rec "", nested, instance, x: y1: z: 42
+  test.equal instance,
+    c: 'hop'
+    x:
+      t: 'plof'
+      y1:
+        r: 'plop'
+        z: 42
+      y2:
+        r: 'bof'
+        z: 2
+      y3: 99
 
+  # Ignore an unexisting field
+  Type.update_rec "", nested, instance, x: y2: r: 'DO NOT DO THAT'
+  test.equal instance,
+    c: 'hop'
+    x:
+      t: 'plof'
+      y1:
+        r: 'plop'
+        z: 42
+      y2:
+        r: 'bof'
+        z: 2
+      y3: 99
 
-Type.Types = {}
+  # Ignore empty object (merge its new properties as usual = do nothing)
+  Type.update_rec "", nested, instance, x: y1: {}
+  test.equal instance,
+    c: 'hop'
+    x:
+      t: 'plof'
+      y1:
+        r: 'plop'
+        z: 42
+      y2:
+        r: 'bof'
+        z: 2
+      y3: 99
 
-Type.Types.Optional = (type) ->
-  type = Type.resolve type
-  __type_check: Match.Optional type.__type_check
-
-Type.Types.Integer =
-  __type_check: Match.Integer
-
-Type.Types.Number =
-  __type_check: Number
-
-Type.Types.String =
-  __type_check: String
-
-Type.Types.Boolean =
-  __type_check: Boolean
-
-Type.Types.Enum = (values) ->
-  __type_check: Match.Where (x) ->
-    x in values
-
-Type.register 'Vector2', [],
-  x: Type.Types.Number
-  y: Type.Types.Number
-
-Type.register 'Vector3', ['Vector2'],
-  z: Type.Types.Number
-
-Type.register 'Quaternion', ['Vector3'],
-  w: Type.Types.Number
-
-Type.register 'Color3', [],
-  r: Type.Types.Number
-  g: Type.Types.Number
-  b: Type.Types.Number
+  # Correctly delete an optional field
+  Type.update_rec "", nested, instance, x: y3: Type.undefined_field
+  test.equal instance,
+    c: 'hop'
+    x:
+      t: 'plof'
+      y1:
+        r: 'plop'
+        z: 42
+      y2:
+        r: 'bof'
+        z: 2
   
-Type.register 'Color4', ['Color3'],
-  a: Type.Types.Number
+  # Throw if incompatible type
+  test.throws (-> Type.update_rec("", nested, instance, x: y2: z: 'Not a number')), ".x.y2.z"
+  test.throws (-> Type.update_rec("", nested, instance, x: y1: z: [])), ".x.y1.z"
+  test.throws (-> Type.update_rec("", nested, instance, x: y1: 12345)), ".x.y1"
+
+
+Tinytest.add 'meteor-scenegraph - Type.update()', (test) ->
+  test.throws (-> Type.update({}, {})), ""
+
+  Type.register 'Labeled', [], {label: Type.Types.String}
+  Type.register 'Rated', [], {rating: Type.Types.Number}
+  Type.register 'Song', ['Labeled', Type.Types.Rated], {}
+  Type.register 'Artist', [],
+    songs:
+      best: 'Song'
+
+  artist =
+    type: 'Artist'
+    name: 'Roberto'
+    songs:
+      worst:
+        blop: 'pouet'
+      best:
+        label: 'Parlophone'
+        rating: 2
+
+  Type.update artist,
+    songs:
+      best:
+        label: 'EMI'
+  test.equal artist,
+    type: 'Artist'
+    name: 'Roberto'
+    songs:
+      worst:
+        blop: 'pouet'
+      best:
+        label: 'EMI'
+        rating: 2
+
+  # Ignores undefined fields
+  Type.update artist, name: 'Alonzo'
+  test.equal artist,
+    type: 'Artist'
+    name: 'Roberto'
+    songs:
+      worst:
+        blop: 'pouet'
+      best:
+        label: 'EMI'
+        rating: 2
+
+Tinytest.add 'meteor-scenegraph - Type.factory()', (test) ->
+  test.throws (-> Type.factory()), "argument"
+  test.throws (-> Type.factory('Vector2')), "argument"
+  test.throws (-> Type.factory('Vector2', 45)), "argument"
+  test.throws (-> Type.factory('Undefined Type', (->))), "unknown"
+
+  Type.register 'Bird', [],
+    distance: 'Number'
+
+  fun = -> {}
+
+  Type.factory 'Bird', fun
+
+  test.equal Type.Types.Bird.__factory, fun
+
+Tinytest.add 'meteor-scenegraph - Type.create()', (test) ->
+  class DetailedBird
+    type: 'Bird'
+    mesh: 'bird.obj'
+
+  class LowResBird
+    type: 'Bird'
+    mesh: 'cube.obj'
+
+  Type.register 'Bird', [],
+    distance: 'Number'
+    color: Type.Types.Optional('String')
+
+  Type.Types.Bird.__factory = (b) ->
+    test.isFalse b.hasOwnProperty('color')
+    test.equal b.distance, 42
+    if b.distance > 20
+      new LowResBird()
+    else
+      new DetailedBird()
+
+  test.throws (-> Type.create()), "argument"
+  test.throws (-> Type.create {}), "type"
+  test.throws (-> Type.create type: 'Bird'), ".distance"
+
+  b1 = Type.create
+    type: 'Bird'
+    distance: 42
+    color: Type.undefined_field
+
+  test.isTrue b1 instanceof LowResBird
+  test.equal b1.type, 'Bird'
+  test.equal b1.mesh, 'cube.obj'
+  test.equal b1.distance, undefined # This function does not do the update
 
 
 
-###
+# TODO tests for pre-registered types?
