@@ -92,13 +92,20 @@ Type.check_type = (object) ->
 Type.some_fields_rec = (type, object, fields) ->
   subset = {}
   for own name, field_type of type when name != '__type_check'
-    unless (fields == true) or (_.isObject(fields) and (!fields.hasOwnProperty(name) or _.isObject(fields[name]) or fields[name] == true))
-      throw new SG.Error "Type.some_fieds_rec: wrong specifier of updated fields"
+    unless (fields == true) or (
+      _.isObject(fields) and (
+        !fields.hasOwnProperty(name) or
+        _.isObject(fields[name]) or
+        fields[name] == true))
+          throw new SG.Error "Type.some_fieds_rec: wrong specifier of updated fields"
     subfields = (fields == true) or fields[name]
-    if subfields == true or _.isObject(subfields)
-      if _.isObject(object[name]) and field_type.__type_check == Object
+    if _.isObject(object[name]) and field_type.__type_check == Object
+      if subfields == true or _.isObject(subfields)
         subset[name] = Type.some_fields_rec field_type, object[name], subfields
-      else
+    else
+      if _.isObject(subfields)
+        throw new SG.Error "Type.some_fieds_rec: wrong specifier of updated fields"
+      if subfields == true
         subset[name] =
           if object[name] == undefined
             Type.undefined_field

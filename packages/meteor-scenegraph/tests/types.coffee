@@ -1,6 +1,6 @@
 Type = SG.Internals.Type
 
-Tinytest.add 'meteor-scenegraph - Type.resolve()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - resolve()', (test) ->
   test.throws (-> Type.resolve()), 'arguments'
   test.throws (-> Type.resolve 'Bad'), 'unknown'
   test.throws (-> Type.resolve {field: 'Bad'}), 'unknown'
@@ -20,7 +20,7 @@ Tinytest.add 'meteor-scenegraph - Type.resolve()', (test) ->
   test.equal Type.resolve(Type.Types.Boolean), Type.Types.Boolean
 
 
-Tinytest.add 'meteor-scenegraph - Type.register()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - register()', (test) ->
   test.throws (-> Type.register()), "arguments"
   test.throws (-> Type.register 'Test'), "arguments"
   test.throws (-> Type.register 'Test', []), "arguments"
@@ -56,7 +56,7 @@ Tinytest.add 'meteor-scenegraph - Type.register()', (test) ->
   test.equal Type.Types.Artist.songs.best.label, Type.Types.String
   test.equal Type.Types.Artist.songs.best.rating, Type.Types.Number
 
-Tinytest.add 'meteor-scenegraph - Type.check_type_rec()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - check_type_rec()', (test) ->
   vector2 =
     __type_check: Object
     x: Type.Types.Number
@@ -93,7 +93,7 @@ Tinytest.add 'meteor-scenegraph - Type.check_type_rec()', (test) ->
   test.throws (-> Type.check_type_rec('', nested, {x: {y: {}}})), '.x.y.z'
   test.throws (-> Type.check_type_rec('', nested, {x: {y: {z: "pouet"}}})), '.x.y.z'
 
-Tinytest.add 'meteor-scenegraph - Type.check_type()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - check_type()', (test) ->
   Type.check_type
     type: 'Vector2'
     x: 1
@@ -125,7 +125,7 @@ Tinytest.add 'meteor-scenegraph - Type.check_type()', (test) ->
       x: {}
       y: 1), 'Vector2.x'
 
-Tinytest.add 'meteor-scenegraph - Type.get_type()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - get_type()', (test) ->
   test.equal Type.get_type(type: 'Vector2'), Type.Types.Vector2
 
   test.throws (-> Type.get_type 'pouet'), 'object'
@@ -133,7 +133,7 @@ Tinytest.add 'meteor-scenegraph - Type.get_type()', (test) ->
   test.throws (-> Type.get_type type: false), 'type information'
   test.throws (-> Type.get_type type: "gloubiboulga"), 'unknown'
 
-Tinytest.add 'meteor-scenegraph - Type.some_fields_rec()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - some_fields_rec()', (test) ->
   nested =
     __type_check: Object
     x:
@@ -182,8 +182,14 @@ Tinytest.add 'meteor-scenegraph - Type.some_fields_rec()', (test) ->
 
   # The updated fields specification must only contain true
   test.throws (-> Type.some_fields_rec(nested, instance, x: y2: "pouet")), "fields"
+  test.throws (-> Type.some_fields_rec(Type.Types.Vector2, {
+    x: 1
+    y: 2
+  }, {
+    x: {}
+  })), 'fields'
 
-Tinytest.add 'meteor-scenegraph - Type.some_fields()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - some_fields()', (test) ->
   # Throws for the same reasons as Type.get_type and Type.some_fields_rec
   test.throws (-> Type.some_fields({}, true)), ""
 
@@ -217,11 +223,11 @@ Tinytest.add 'meteor-scenegraph - Type.some_fields()', (test) ->
       best:
         label: 'Parlophone'
 
-Tinytest.add 'meteor-scenegraph - Type.all_fields()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - all_fields()', (test) ->
   # Should just call Type.some_fields(..., true)
   # FIXME Not tested
 
-Tinytest.add 'meteor-scenegraph - Type.update_rec()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - update_rec()', (test) ->
   nested =
     __type_check: Object
     x:
@@ -307,7 +313,7 @@ Tinytest.add 'meteor-scenegraph - Type.update_rec()', (test) ->
   test.throws (-> Type.update_rec("", nested, instance, x: y1: 12345)), ".x.y1"
 
 
-Tinytest.add 'meteor-scenegraph - Type.update()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - update()', (test) ->
   test.throws (-> Type.update({}, {})), ""
 
   Type.register 'Labeled', [], {label: Type.Types.String}
@@ -353,7 +359,7 @@ Tinytest.add 'meteor-scenegraph - Type.update()', (test) ->
         label: 'EMI'
         rating: 2
 
-Tinytest.add 'meteor-scenegraph - Type.factory()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - factory()', (test) ->
   test.throws (-> Type.factory()), "argument"
   test.throws (-> Type.factory('Vector2')), "argument"
   test.throws (-> Type.factory('Vector2', 45)), "argument"
@@ -368,7 +374,7 @@ Tinytest.add 'meteor-scenegraph - Type.factory()', (test) ->
 
   test.equal Type.Types.Bird.__factory, fun
 
-Tinytest.add 'meteor-scenegraph - Type.create()', (test) ->
+Tinytest.add 'meteor-scenegraph - Type - create()', (test) ->
   class DetailedBird
     type: 'Bird'
     mesh: 'bird.obj'
@@ -402,7 +408,6 @@ Tinytest.add 'meteor-scenegraph - Type.create()', (test) ->
   test.equal b1.type, 'Bird'
   test.equal b1.mesh, 'cube.obj'
   test.equal b1.distance, undefined # This function does not do the update
-
 
 
 # TODO tests for pre-registered types?

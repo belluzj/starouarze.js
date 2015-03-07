@@ -30,9 +30,11 @@ Package.onTest(function (api) {
   api.use('underscore');
   api.use('coffeescript');
   api.use('test-helpers');
+  api.use('practicalmeteor:sinon');
   api.use('belluzj:meteor-scenegraph');
   api.addFiles([
     'tests/tests.coffee',
     'tests/types.coffee',
+    'tests/node.coffee',
   ]);
 });
