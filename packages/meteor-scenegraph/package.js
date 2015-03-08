@@ -20,7 +20,13 @@ Package.onUse(function (api) {
     'lib/store.coffee',
     'lib/scenegraph.coffee',
   ]);
-  api.addFiles('server/scenegraph.coffee', 'server');
+  api.addFiles([
+    'server/store.coffee',
+    'server/scenegraph.coffee',
+  ], 'server');
+  api.addFiles([
+    'client/store.coffee',
+  ], 'client');
   api.export('SG');
 });
 

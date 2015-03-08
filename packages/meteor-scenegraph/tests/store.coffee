@@ -1,23 +1,24 @@
-Type = SG.Internals.Type
+Store = SG.Internals.Store
 
-Tinytest.add 'meteor-scenegraph - Type - resolve()', (test) ->
-  test.throws (-> Type.resolve()), 'arguments'
-  test.throws (-> Type.resolve 'Bad'), 'unknown'
-  test.throws (-> Type.resolve {field: 'Bad'}), 'unknown'
-  test.throws (-> Type.resolve {foo: {bar: {baz: 'Bad'}}}), 'unknown'
+if Meteor.isServer
+  Tinytest.add 'meteor-scenegraph - Store - publish()', (test) ->
+    test.throws (-> Type.resolve()), 'arguments'
+    test.throws (-> Type.resolve 'Bad'), 'unknown'
+    test.throws (-> Type.resolve {field: 'Bad'}), 'unknown'
+    test.throws (-> Type.resolve {foo: {bar: {baz: 'Bad'}}}), 'unknown'
 
-  # Put the intermediary type checks
-  type = Type.resolve {foo: {bar: {baz: Type.Types.String}}}
-  test.isTrue _.isObject(type)
-  test.equal type.__type_check, Object
-  test.equal type.foo.__type_check, Object
-  test.equal type.foo.bar.__type_check, Object
-  test.equal type.foo.bar.baz, Type.Types.String
+    # Put the intermediary type checks
+    type = Type.resolve {foo: {bar: {baz: Type.Types.String}}}
+    test.isTrue _.isObject(type)
+    test.equal type.__type_check, Object
+    test.equal type.foo.__type_check, Object
+    test.equal type.foo.bar.__type_check, Object
+    test.equal type.foo.bar.baz, Type.Types.String
 
-  test.equal Type.resolve(Type.Types.String), Type.Types.String
-  test.equal Type.resolve(Type.Types.Integer), Type.Types.Integer
-  test.equal Type.resolve(Type.Types.Number), Type.Types.Number
-  test.equal Type.resolve(Type.Types.Boolean), Type.Types.Boolean
+    test.equal Type.resolve(Type.Types.String), Type.Types.String
+    test.equal Type.resolve(Type.Types.Integer), Type.Types.Integer
+    test.equal Type.resolve(Type.Types.Number), Type.Types.Number
+    test.equal Type.resolve(Type.Types.Boolean), Type.Types.Boolean
 
 
 Tinytest.add 'meteor-scenegraph - Type - register()', (test) ->
@@ -182,12 +183,6 @@ Tinytest.add 'meteor-scenegraph - Type - some_fields_rec()', (test) ->
 
   # The updated fields specification must only contain true
   test.throws (-> Type.some_fields_rec(nested, instance, x: y2: "pouet")), "fields"
-  test.throws (-> Type.some_fields_rec(Type.Types.Vector2, {
-    x: 1
-    y: 2
-  }, {
-    x: {}
-  })), 'fields'
 
 Tinytest.add 'meteor-scenegraph - Type - some_fields()', (test) ->
   # Throws for the same reasons as Type.get_type and Type.some_fields_rec
@@ -223,14 +218,11 @@ Tinytest.add 'meteor-scenegraph - Type - some_fields()', (test) ->
       best:
         label: 'Parlophone'
 
-  # TODO add failing test for '__factory'
-
 Tinytest.add 'meteor-scenegraph - Type - all_fields()', (test) ->
   # Should just call Type.some_fields(..., true)
   # FIXME Not tested
 
 Tinytest.add 'meteor-scenegraph - Type - update_rec()', (test) ->
-  # TODO add failing test for '__factory'
   nested =
     __type_check: Object
     x:

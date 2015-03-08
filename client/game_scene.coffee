@@ -3,11 +3,10 @@
 @scenegraph = scenegraph = new ReactiveVar null
 
 Tracker.autorun ->
-  if Meteor.user() and Meteor.user().round_id
+  if Meteor.user() and Meteor.user().round_id and BB.scene
+    # The babylon scene must be ready before we call subscribe()
+    # because new meshes will start arriving as soon as the subscription starts
     scene = new SG.Scene Meteor.user().round_id
-    scene.added (type) ->
-      if type == 'TestCube'
-        new TestCube()
     scene.subscribe()
     scenegraph.set(scene)
 
@@ -34,6 +33,6 @@ Tracker.autorun ->
 # Test objects
 Tracker.autorun ->
     if BB.scene and scenegraph.get()
-      BB.cube = new TestCube()
+      BB.cube = new TestCube(BB.scene)
       BB.cube.owner_id = Meteor.userId()
       scenegraph.get().add BB.cube

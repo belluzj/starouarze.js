@@ -12,30 +12,28 @@ SG.Types = Type.Types
 SG.type = (name, inheritance, fields) ->
   Type.register name, inheritance, fields
 
+SG.factory = Type.factory
+
 class SG.Scene
   constructor: (scene_id) ->
     @scene_id = scene_id
 
   # Add objects to the scene graph
   add: (object) ->
-    Node.manage @scene_id, object
-    Store.insert object
+    Node.manage object, @scene_id
+    Store.manage object
   
   # Share a set of object updates
-  update: (object, fields) ->
+  update: (object, fields = true) ->
     unless Node.managed object
       throw new SG.Error "Tried to update unmanaged object"
-    Store.update Node.id(object), Node.some_fields(object, fields)
+    Store.update Node.scene_id(object), Node.id(object), Node.some_fields(object, fields)
   
   # Remove objects from the scene
   remove: (object) ->
     unless Node.managed object
       throw new SG.Error "Tried to remove unmanaged object"
-    Store.remove Node.id(object)
-  
-  # Register the new-object callback
-  added: (callback) ->
-    Store.set_added_callback @scene_id, callback
+    Store.remove Node.scene_id(object), Node.id(object)
 
   # Subscribe to updates
   subscribe: ->

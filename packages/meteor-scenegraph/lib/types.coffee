@@ -54,7 +54,7 @@ Type.resolve = (type) ->
     throw new SG.Error "Type.resolve: unknown type `#{ type }'"
 
 Type.check_type_rec = (path, type, object) ->
-  for own name, field_type of type when name != '__type_check'
+  for own name, field_type of type when name not in ['__type_check', '__factory']
     subpath = path + '.' + name
     if _.isObject object[name]
       unless field_type.__type_check == Object
@@ -91,7 +91,7 @@ Type.check_type = (object) ->
 #
 Type.some_fields_rec = (type, object, fields) ->
   subset = {}
-  for own name, field_type of type when name != '__type_check'
+  for own name, field_type of type when name not in ['__type_check', '__factory']
     unless (fields == true) or (
       _.isObject(fields) and (
         !fields.hasOwnProperty(name) or
@@ -130,6 +130,11 @@ Type.update_rec = (path, type, object, fields) ->
             Match.test(undefined, field_type.__type_check))
         throw new SG.Error "Type.update_rec: field #{ subpath } does not match its type"
       if field_type.__type_check == Object
+        # FIXME if object[name] is not an object, will fail
+        # Should we create the object ourselves?
+        # Or throw an exception? Reason: update is meant to work on already valid objects. (not always true, ex after updating a blank object)
+        unless _.isObject(object[name])
+          object[name] = {}
         Type.update_rec subpath, field_type, object[name], fields[name]
       else
         if fields[name] != Type.undefined_field
@@ -156,10 +161,9 @@ Type.create = (fields) ->
     throw new SG.Error "Type.create: invalid argument", error
   type = Type.get_type(fields)
   if type.hasOwnProperty('__factory')
-    fields_ = {type: fields.type}
-    Type.update(fields_, fields)
-    Type.check_type(fields_)
-    type.__factory(fields_)
+    # Do a type check 
+    Type.check_type(fields)
+    type.__factory(fields)
   else
     {}
 

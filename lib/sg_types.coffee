@@ -14,3 +14,5 @@ SG.type 'Mesh', ['Node'],
 
 SG.type 'TestCube', ['Mesh'], {}
 
+SG.factory 'TestCube', (fields) ->
+  new TestCube(BB.scene)

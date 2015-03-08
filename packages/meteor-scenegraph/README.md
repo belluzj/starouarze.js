@@ -29,7 +29,7 @@ SG.publish(function(scene_id) {
   return false;
 });
 
-// Anywhere
+// Client
 var scene = new SG.Scene(Meteor.user().my_scene_id);
 scene.subscribe();
 ```
@@ -195,7 +195,7 @@ remotely, its function `sg_before_remove()` will be called locally.
 Ideas for improvement
 ---------------------
 
-1.  To do some processing using the old data before putting new values in your
+-   To do some processing using the old data before putting new values in your
     object's fields, you can add a `sg_before_update(fields)` method to your
     object. `fields` contains the changed fields with their new values. If a
     field was removed from the object then it will be present in `fields` with
@@ -204,17 +204,19 @@ Ideas for improvement
     you will do the update yourself, but by default it will be done by the
     scenegraph.**
 
-3.  Maybe a function like `SG.dispatchUpdates()` to update all objects at
+-   Publish only the surroundings of a given position?
+
+-   Maybe a function like `SG.dispatchUpdates()` to update all objects at
     a specific moment (instead of continuously as network events arrive)?
 
-4.  Allow exchange of events between objects? Because synchronization does not allow
+-   Allow exchange of events between objects? Because synchronization does not allow
     two objects of different types to communicate. Should the scenegraph be handling
     communications? We have unique object identifiers though (node ids).
 
-5.  Reactive fields with SG.Types.Reactive(...) decorator... or just,
+-   Reactive fields with SG.Types.Reactive(...) decorator... or just,
     if we encouter a reactive variable we use the get/set functions
 
-6.  Every newly created object, either plain or produced by a factory, will be
+-   Every newly created object, either plain or produced by a factory, will be
     passed to a callback that you can specify for each type and/or for any
     type, using the `SG.added()' method.
 
