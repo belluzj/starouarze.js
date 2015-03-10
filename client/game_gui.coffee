@@ -23,7 +23,7 @@ Template.GameUI.created = ->
   )
   
   $( "#gui" ).mousemove (event) ->
-    $( "#viseur_out" ).offset({top: event.pageY, left: event.pageX})
+    $( "#viseur_out" ).offset({top: event.pageY - 8, left: event.pageX - 7})
     angle = 90 + 57.3 * Math.atan2(event.pageY - $( "#gui" ).height()/2, event.pageX - $( "#gui" ).width()/2)
     $( "#viseur_out" ).css({transform: 'rotate(' + angle + 'deg)'})
     

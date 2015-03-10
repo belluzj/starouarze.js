@@ -26,13 +26,13 @@ html, body {
 	margin: auto;
 	height: 300px;
 	width: 500px;
-	background-color: #222222;
+	background-color: rgba(80, 80, 80, 0.6);
 	top: 0;
 	bottom: 0;
 	right: 0;
 	left: 0;
 	position: absolute;
-	opacity: 0.6;
+
 
 }
 

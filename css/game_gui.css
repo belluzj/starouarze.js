@@ -1,5 +1,5 @@
-.gui {
-    cursor: none;
+.ingame{
+   cursor: none;
 }
 
 
@@ -50,4 +50,8 @@
 
 .gui .aimZone:hover + #viseur_out{
     display: none;
+}
+
+.gui .menu #login-buttons {
+    opacity: 1;
 }
