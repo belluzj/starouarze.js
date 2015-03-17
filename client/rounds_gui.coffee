@@ -37,7 +37,7 @@ Template.JoinRound.events
 Tracker.autorun ->
   if Meteor.user()
     round = Rounds.findOne Meteor.user().round_id
-    if round?.missing_users == 0
+    if round?.missing_users > 0
       #FIXME fix me please
       Router.go '/loading'
 
