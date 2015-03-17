@@ -9,6 +9,7 @@ SG.type 'Mesh', ['Node'],
   mesh:
     name: T.String
     position: T.Vector3
+    rotation: T.Vector3
     material:
       diffuseColor: T.Color3
 

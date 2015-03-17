@@ -45,7 +45,7 @@ Meteor.methods
       throw new Meteor.Error 'no-user'
     that = @
     Rounds.update {
-      missing_users: {$gt: 0} # Can't leave a complete round
+      #missing_users: {$gt: 0} # Can't leave a complete round?
       user_ids: @userId
     }, {
       $inc: {missing_users: 1}
