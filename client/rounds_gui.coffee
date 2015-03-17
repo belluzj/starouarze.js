@@ -22,7 +22,10 @@ Template.CreateRound.events
 
 Template.JoinRound.helpers
   'openRounds': ->
-    Rounds.find {missing_users: {$gt: 0}}
+    Rounds.find $or: [
+      Meteor.user().round_id
+      {missing_users: {$gt: 0}}
+    ]
   'canLeave': ->
     @_id == Meteor.user().round_id
   'canJoin': ->

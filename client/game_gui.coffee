@@ -14,14 +14,16 @@ Template.GameUI.rendered = ->
         BB.cube.mesh.material.diffuseColor.r = 1
     scenegraph.get().update BB.cube
   $(window).click ->
-    fire = new Laser(BB.cube.mesh.position, BB.cube.mesh.rotation, 40, "default_laser")
+    fire = new Laser(BB.scene)
+    fire.setPosRot(BB.cube.mesh.position, BB.cube.mesh.rotation)
+    fire.color = 'default laser'
+    scenegraph.get().add(fire)
     
     
 Template.GameUI.created = ->
   
-  $(window).bind("contextmenu", (e) ->  
-	  false;  
-  )
+  $(window).bind "contextmenu", (e) ->
+	  false
   
   $( "#gui" ).mousemove (event) ->
     $( "#viseur_out" ).offset({top: event.pageY - 8, left: event.pageX - 7})
